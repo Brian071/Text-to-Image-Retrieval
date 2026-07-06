@@ -10,4 +10,4 @@ METADATA_PATH = os.path.join(DATA_DIR, "images", "metadata", "images.csv.gz")
 MODEL_NAME = "openai/clip-vit-base-patch32" 
 
 # Batasan Skala Dataset
-MAX_SAMPLES = 780
+MAX_SAMPLES = 9000
