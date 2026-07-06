@@ -8,23 +8,23 @@ class ImageRetriever:
         self.data = load_data()
         self.image_paths = self.data['absolute_path'].tolist()
         
-        print("Mengekstraksi embedding untuk seluruh galeri gambar...")
-        # (Catatan: Untuk produksi skala besar, lakukan proses ini dalam *batch*)
+        print("Mengekstraksi embedding murni untuk seluruh galeri sepatu...")
         if self.image_paths:
             self.image_embeddings = self.clip.get_image_embeddings(self.image_paths)
         else:
             self.image_embeddings = None
 
     def search(self, query, top_k=4):
-        if self.image_embeddings is None:
+        if self.image_embeddings is None or len(self.image_paths) == 0:
             return []
             
-        text_emb = self.clip.get_text_embedding(query)
+        # Menggunakan format prompt Anda untuk menetralisir white background
+        enhanced_query = f"a clear photo of a {query}, shoe product on a white background"
+        text_emb = self.clip.get_text_embedding(enhanced_query)
         
-        # Hitung skor kesamaan (Cosine Similarity)
         similarities = torch.cosine_similarity(text_emb, self.image_embeddings)
         
-        # Ambil indeks 'top_k' dari nilai tertinggi
+        if similarities.dim() == 0: similarities = similarities.unsqueeze(0)
         top_indices = similarities.argsort(descending=True)[:top_k].cpu().numpy()
         
         return [self.image_paths[i] for i in top_indices]
