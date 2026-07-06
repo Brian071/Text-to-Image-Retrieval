@@ -18,13 +18,14 @@ class ImageRetriever:
         if self.image_embeddings is None or len(self.image_paths) == 0:
             return []
             
-        # Menggunakan format prompt Anda untuk menetralisir white background
-        enhanced_query = f"a clear photo of a {query}, shoe product on a white background"
+        # PERBAIKAN 1: Hapus kata-kata berlebihan yang menenggelamkan query
+        enhanced_query = f"a photo of {query}"
         text_emb = self.clip.get_text_embedding(enhanced_query)
         
-        similarities = torch.cosine_similarity(text_emb, self.image_embeddings)
+        # PERBAIKAN 2: Gunakan Matrix Multiplication
+        similarities = (self.image_embeddings @ text_emb.T).squeeze()
         
-        if similarities.dim() == 0: similarities = similarities.unsqueeze(0)
+        # Ambil top K
         top_indices = similarities.argsort(descending=True)[:top_k].cpu().numpy()
         
         return [self.image_paths[i] for i in top_indices]
